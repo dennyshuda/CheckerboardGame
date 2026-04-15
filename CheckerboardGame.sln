@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckerboardGame", "CheckerboardGame\CheckerboardGame.csproj", "{8A532ADC-9F44-47AD-A58C-438861B75EF3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckerboardGame.Backend", "CheckerboardGame.Backend\CheckerboardGame.Backend.csproj", "{F773A57C-E786-42F2-8D7D-81EB552874B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckerboardGame.UI", "CheckerboardGame.UI\CheckerboardGame.UI.csproj", "{9BA6579E-EDC4-4FB8-A765-266C743A9477}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{8A532ADC-9F44-47AD-A58C-438861B75EF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A532ADC-9F44-47AD-A58C-438861B75EF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A532ADC-9F44-47AD-A58C-438861B75EF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F773A57C-E786-42F2-8D7D-81EB552874B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F773A57C-E786-42F2-8D7D-81EB552874B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F773A57C-E786-42F2-8D7D-81EB552874B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F773A57C-E786-42F2-8D7D-81EB552874B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BA6579E-EDC4-4FB8-A765-266C743A9477}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BA6579E-EDC4-4FB8-A765-266C743A9477}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BA6579E-EDC4-4FB8-A765-266C743A9477}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BA6579E-EDC4-4FB8-A765-266C743A9477}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
