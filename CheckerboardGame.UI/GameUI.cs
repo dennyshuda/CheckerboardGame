@@ -1,8 +1,12 @@
 ﻿namespace CheckerboardGame.UI;
 
-public class GameUI
+public class GameUi
 {
-    public void Run()
+    public GameUi()
+    {
+    }
+
+    public void Run() 
     {
         
     }
