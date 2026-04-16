@@ -6,14 +6,14 @@ namespace CheckerboardGame.Backend;
 
 public class Game : IGame
 {
-    private readonly IBoard _board;
-    public IBoard Board => _board;
+    private IBoard _board;
+
     private List<IPlayer> _players;
     private int _currentPlayerIndex;
     private IPlayer? _winner;
-    public GameStatus Status { get; }
+    private GameStatus Status { get; }
 
-    public Game(IBoard board)
+    public Game(IBoard board) 
     {
         _board = board ?? throw new ArgumentNullException(nameof(board));
         _currentPlayerIndex = 0;
@@ -42,15 +42,12 @@ public class Game : IGame
         {
             for (int x = 0; x < 8; x++)
             {
-                // Aturan kotak gelap: (x + y) ganjil
                 if ((x + y) % 2 != 0)
                 {
-                    // Baris 0-2: Bidak Hitam
                     if (y < 3)
                     {
                         _board.Squares[y, x].Piece = new Piece(Color.Black, Role.Troop);
                     }
-                    // Baris 5-7: Bidak Putih
                     else if (y > 4)
                     {
                         _board.Squares[y, x].Piece = new Piece(Color.White, Role.Troop);
@@ -60,7 +57,12 @@ public class Game : IGame
         }
         Console.WriteLine("Backend: Bidak telah disusun di posisi awal.");
     }
-
+    
+    public IBoard GetBoard()
+    {
+        return _board;
+    }
+    
     public void Run(List<IPlayer> players)
     {
         if (players.Count != 2)
@@ -71,6 +73,41 @@ public class Game : IGame
         _players = players;
         
         Console.WriteLine($"Game Ready: {_players[0].Name} (White) vs {_players[1].Name} (Black)");
+    }
+
+    public void DoMove(Point from, Point to)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemovePiece(Point point)
+    {
+        if (point.X < 0 || point.X > 7 || point.Y < 0 || point.Y > 7)
+        {
+            Console.WriteLine("Backend Error: Koordinat di luar papan!");
+            return;
+        }
+        var square = _board.Squares[point.Y, point.X];
+        
+        if (square.Piece != null)
+        {
+            square.Piece = null;
+            Console.WriteLine($"Backend: Bidak di ({point.Y},{point.X}) telah dihapus.");
+        }
+        else
+        {
+            Console.WriteLine($"Backend: Kotak ({point.Y},{point.X}) memang sudah kosong.");
+        }
+    }
+
+    public void GetAllValidMove(Color color)
+    {
+        throw new NotImplementedException();
+    }
+
+    public GameStatus GetGameStatus()
+    {
+        return Status;
     }
 
     public void SwitchTurn()
@@ -85,4 +122,5 @@ public class Game : IGame
         IPlayer currentPlayer = _players[_currentPlayerIndex];
         Console.WriteLine($"\nCurrent Turn: {currentPlayer.Name}");
     }
+    
 }

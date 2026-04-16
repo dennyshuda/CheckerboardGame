@@ -17,11 +17,12 @@ public class GameUi
             new Player("Wowo"),
             new Player("Bahlil")  
         };
-        
     }
     
     public void DisplayBoard()
+    
     {
+        IBoard boardData = _game.GetBoard();
         Console.WriteLine("   0  1  2  3  4  5  6  7");
 
         for (int y = 0; y < 8; y++)
@@ -30,7 +31,7 @@ public class GameUi
 
             for (int x = 0; x < 8; x++)
             {
-                var piece = _game.Board.Squares[y, x].Piece;
+                var piece = boardData.Squares[y, x].Piece;
                 
                 if (piece != null)
                 {
@@ -51,10 +52,11 @@ public class GameUi
 
     public void Run() 
     {
-            Console.Clear();
-            Console.WriteLine($"--- Giliran ---");
-            DisplayBoard();
+        Console.Clear();
+        Console.WriteLine($"--- Giliran ---");
+        DisplayBoard();
         
+        _game.GetBoard();
         _game.Run(_players);
     }
 }
