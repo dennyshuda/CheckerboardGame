@@ -12,11 +12,11 @@ public class GameUi
     public GameUi(IGame game)
     {
         _game = game ?? throw new ArgumentNullException(nameof(game));
-        _players = new List<IPlayer>
-        {
+        _players =
+        [
             new Player("Wowo"),
             new Player("Bahlil")
-        };
+        ];
     }
 
     public void DisplayBoard()
