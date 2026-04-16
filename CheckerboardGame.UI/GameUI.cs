@@ -54,9 +54,14 @@ public class GameUi
     {
         Console.Clear();
         _game.Run(_players);
+        Console.WriteLine(_game.CountPieces(Color.Black));
         Console.WriteLine($"--- Giliran ---");
         var currentPlayer = _game.GetCurrentPlayer();
         DisplayBoard();
+        _game.RemovePiece(new Point(0, 1));
+        _game.RemovePiece(new Point(0, 1));
+        Console.WriteLine(_game.CountPieces(Color.Black));
+        Console.WriteLine($"Bidak di (2,5) telah dihapus.");
         Console.WriteLine($"Sekarang giliran: {currentPlayer.Name}");
         _game.SwitchTurn();
         var currentPlayer2 = _game.GetCurrentPlayer();

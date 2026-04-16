@@ -11,4 +11,5 @@ public interface IGame
     void DoMove(Point from, Point to);
     void RemovePiece(Point point);
     IBoard GetBoard();
+    int CountPieces(Color color);
 }
