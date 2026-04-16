@@ -4,5 +4,5 @@ namespace CheckerboardGame.Backend.Interfaces;
 
 public interface IBoard
 {
-    Square[,] Squares { get; }
+    Square[,] Squares { get; set; }
 }
