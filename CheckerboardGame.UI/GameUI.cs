@@ -8,21 +8,21 @@ public class GameUi
 {
     private readonly IGame _game;
     private readonly List<IPlayer> _players;
-    
+
     public GameUi(IGame game)
     {
         _game = game ?? throw new ArgumentNullException(nameof(game));
         _players = new List<IPlayer>
         {
             new Player("Wowo"),
-            new Player("Bahlil")  
+            new Player("Bahlil")
         };
     }
-    
+
     public void DisplayBoard()
-    
     {
         IBoard boardData = _game.GetBoard();
+
         Console.WriteLine("   0  1  2  3  4  5  6  7");
 
         for (int y = 0; y < 8; y++)
@@ -32,15 +32,15 @@ public class GameUi
             for (int x = 0; x < 8; x++)
             {
                 var piece = boardData.Squares[y, x].Piece;
-                
+
                 if (piece != null)
                 {
                     Console.ForegroundColor = (piece.Color == Color.White) ? ConsoleColor.White : ConsoleColor.Red;
-                    Console.Write(" O "); 
+                    Console.Write(" O ");
                 }
                 else
                 {
-                    Console.Write("   "); 
+                    Console.Write("   ");
                 }
 
                 Console.BackgroundColor = (x + y) % 2 == 0 ? ConsoleColor.Black : ConsoleColor.White;
@@ -50,13 +50,18 @@ public class GameUi
         }
     }
 
-    public void Run() 
+    public void Run()
     {
         Console.Clear();
-        Console.WriteLine($"--- Giliran ---");
-        DisplayBoard();
-        
-        _game.GetBoard();
         _game.Run(_players);
+        Console.WriteLine($"--- Giliran ---");
+        var currentPlayer = _game.GetCurrentPlayer();
+        DisplayBoard();
+        Console.WriteLine($"Sekarang giliran: {currentPlayer.Name}");
+        _game.SwitchTurn();
+        var currentPlayer2 = _game.GetCurrentPlayer();
+        Console.WriteLine($"Sekarang giliran: {currentPlayer2.Name}");
+
+        _game.GetBoard();
     }
 }

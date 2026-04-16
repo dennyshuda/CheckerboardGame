@@ -13,13 +13,12 @@ public class Game : IGame
     private IPlayer? _winner;
     private GameStatus Status { get; }
 
-    public Game(IBoard board) 
+    public Game(IBoard board)
     {
         _board = board ?? throw new ArgumentNullException(nameof(board));
         _currentPlayerIndex = 0;
         Status = GameStatus.Ongoing;
-        
-        
+
         InitializeBoard();
         InitializePiece();
     }
@@ -35,7 +34,7 @@ public class Game : IGame
         }
         Console.WriteLine("Backend: 64 Kotak (Squares) telah dibuat.");
     }
-    
+
     private void InitializePiece()
     {
         for (int y = 0; y < 8; y++)
@@ -57,12 +56,12 @@ public class Game : IGame
         }
         Console.WriteLine("Backend: Bidak telah disusun di posisi awal.");
     }
-    
+
     public IBoard GetBoard()
     {
         return _board;
     }
-    
+
     public void Run(List<IPlayer> players)
     {
         if (players.Count != 2)
@@ -71,7 +70,7 @@ public class Game : IGame
         }
 
         _players = players;
-        
+
         Console.WriteLine($"Game Ready: {_players[0].Name} (White) vs {_players[1].Name} (Black)");
     }
 
@@ -88,7 +87,7 @@ public class Game : IGame
             return;
         }
         var square = _board.Squares[point.Y, point.X];
-        
+
         if (square.Piece != null)
         {
             square.Piece = null;
@@ -100,7 +99,36 @@ public class Game : IGame
         }
     }
 
-    public void GetAllValidMove(Color color)
+    private void GetAllValidMove(Color color)
+    {
+        throw new NotImplementedException();
+    }
+
+    private bool IsNormalMoveValid(Point from, Point to, Piece piece)
+    {
+        throw new NotImplementedException();
+    }
+
+    private bool IsCaptureMoveValid(Point from, Point to, Piece piece)
+    {
+        throw new NotImplementedException();
+    }
+
+    private List<(Point, Point)> GetAllValidMoves(Color color)
+    {
+        throw new NotImplementedException();
+    }
+
+    private List<(Point, Point)> GetCaptureMovesFrom(Color color)
+    {
+        throw new NotImplementedException();
+    }
+
+    private bool IsKing(Point point)
+    {
+        throw new NotImplementedException();
+    }
+    private void PromoteToKing(Role role)
     {
         throw new NotImplementedException();
     }
@@ -110,17 +138,38 @@ public class Game : IGame
         return Status;
     }
 
+    public int CountPieces(Color color)
+    {
+        int count = 0;
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                if (_board.Squares[y, x].Piece?.Color == color)
+                {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
     public void SwitchTurn()
     {
-        if (Status is GameStatus.Draw or GameStatus.GameOver )
+        if (_players == null || _players.Count == 0) return;
+        if (Status is GameStatus.Draw or GameStatus.GameOver)
         {
             throw new InvalidOperationException("Game is already over");
         }
-        
+
         _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
-    
+
         IPlayer currentPlayer = _players[_currentPlayerIndex];
         Console.WriteLine($"\nCurrent Turn: {currentPlayer.Name}");
     }
-    
+
+    public IPlayer GetCurrentPlayer()
+    {
+        return _players[_currentPlayerIndex];
+    }
 }
