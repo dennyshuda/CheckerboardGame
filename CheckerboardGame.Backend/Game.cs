@@ -99,11 +99,6 @@ public class Game : IGame
         }
     }
 
-    private void GetAllValidMove(Color color)
-    {
-        throw new NotImplementedException();
-    }
-
     private bool IsNormalMoveValid(Point from, Point to, Piece piece)
     {
         throw new NotImplementedException();
@@ -116,7 +111,17 @@ public class Game : IGame
 
     private List<(Point, Point)> GetAllValidMoves(Color color)
     {
-        throw new NotImplementedException();
+        var validMoves = new List<(Point, Point)>();
+
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                Console.WriteLine($"{x},{y}");
+            }
+        }
+
+        return validMoves;
     }
 
     private List<(Point, Point)> GetCaptureMovesFrom(Color color)
@@ -124,10 +129,11 @@ public class Game : IGame
         throw new NotImplementedException();
     }
 
-    private bool IsKing(Point point)
+    private bool IsKing(Piece piece)
     {
-        throw new NotImplementedException();
+        return piece.Role == Role.King;
     }
+    
     private void PromoteToKing(Role role)
     {
         throw new NotImplementedException();
@@ -156,7 +162,7 @@ public class Game : IGame
 
     public void SwitchTurn()
     {
-        if (_players == null || _players.Count == 0) return;
+        if (_players.Count == 0) return;
         if (Status is GameStatus.Draw or GameStatus.GameOver)
         {
             throw new InvalidOperationException("Game is already over");
