@@ -50,6 +50,43 @@ public class GameUi
         }
     }
 
+    public void DisplayValidMoves(List<(Point From, Point To)> moves)
+    {
+        if (moves.Count == 0)
+        {
+            Console.WriteLine("Tidak ada langkah yang tersedia!");
+            return;
+        }
+
+        Console.WriteLine("\n--- Langkah yang Tersedia ---");
+
+        for (int i = 0; i < moves.Count; i++)
+        {
+            var m = moves[i];
+            Console.WriteLine($"[{i + 1}] ({m.From.Y},{m.From.X}) -> ({m.To.Y},{m.To.X})");
+        }
+    }
+
+    public void PlayTurn()
+    {
+        var validMoves = _game.GetAllValidMoves(Color.White);
+
+        if (validMoves.Count == 0)
+        {
+            Console.WriteLine("Game Over! Tidak ada langkah tersisa.");
+            return;
+        }
+
+        DisplayValidMoves(validMoves);
+
+        Console.Write("Pilih nomor langkah: ");
+        int choice = int.Parse(Console.ReadLine()) - 1;
+
+        var selectedMove = validMoves[choice];
+
+        _game.DoMove(selectedMove.Item1, selectedMove.Item2);
+    }
+
     public void Run()
     {
         Console.Clear();
@@ -66,6 +103,10 @@ public class GameUi
         _game.SwitchTurn();
         var currentPlayer2 = _game.GetCurrentPlayer();
         Console.WriteLine($"Sekarang giliran: {currentPlayer2.Name}");
+        PlayTurn();
+        DisplayBoard();
+
+
 
         _game.GetBoard();
     }
