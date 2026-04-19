@@ -76,7 +76,22 @@ public class Game : IGame
 
     public void DoMove(Point from, Point to)
     {
-        throw new NotImplementedException();
+        var squareFrom = _board.Squares[from.Y, from.X];
+        var squareTo = _board.Squares[to.Y, to.X];
+        var piece = squareFrom.Piece;
+
+        if (Math.Abs(from.X - to.X) == 2)
+        {
+            int midX = (from.X + to.X) / 2;
+            int midY = (from.Y + to.Y) / 2;
+            _board.Squares[midY, midX].Piece = null;
+        }
+
+        squareTo.Piece = piece;
+        squareFrom.Piece = null;
+
+
+        SwitchTurn();
     }
 
     public void RemovePiece(Point point)
@@ -101,39 +116,110 @@ public class Game : IGame
 
     private bool IsNormalMoveValid(Point from, Point to, Piece piece)
     {
-        throw new NotImplementedException();
+        int dy = to.Y - from.Y;
+        int dx = Math.Abs(to.X - from.X);
+
+        int allowedDy = (piece.Color == Color.White) ? -1 : 1;
+
+        bool isDirectionValid = (piece.Role == Role.King) ? Math.Abs(dy) == 1 : dy == allowedDy;
+
+        return isDirectionValid && dx == 1 && _board.Squares[to.Y, to.X].Piece == null;
     }
 
     private bool IsCaptureMoveValid(Point from, Point to, Piece piece)
     {
-        throw new NotImplementedException();
+        int dy = to.Y - from.Y;
+        int dx = to.X - from.X;
+
+        if (Math.Abs(dx) != 2 || Math.Abs(dy) != 2) return false;
+
+        int midX = from.X + (dx / 2);
+        int midY = from.Y + (dy / 2);
+        var middlePiece = _board.Squares[midY, midX].Piece;
+
+        bool hasEnemyInMiddle = middlePiece != null && middlePiece.Color != piece.Color;
+        bool isLandingEmpty = _board.Squares[to.Y, to.X].Piece == null;
+
+        if (piece.Role != Role.King)
+        {
+            int allowedJumpDy = (piece.Color == Color.White) ? -2 : 2;
+            if (dy != allowedJumpDy) return false;
+        }
+
+        return hasEnemyInMiddle && isLandingEmpty;
     }
 
-    private List<(Point, Point)> GetAllValidMoves(Color color)
+    public List<(Point, Point)> GetAllValidMoves(Color color)
     {
-        var validMoves = new List<(Point, Point)>();
+        var captures = GetCaptureMovesFrom(color);
 
+        if (captures.Count > 0) return captures;
+
+        var normalMoves = new List<(Point, Point)>();
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++)
             {
-                Console.WriteLine($"{x},{y}");
+                var piece = _board.Squares[y, x].Piece;
+                if (piece != null && piece.Color == color)
+                {
+                    int[] dyDir = (piece.Role == Role.King) ? new int[] { -1, 1 } : new int[] { (color == Color.White ? -1 : 1) };
+                    int[] dxDir = { -1, 1 };
+
+                    foreach (int dy in dyDir)
+                    {
+                        foreach (int dx in dxDir)
+                        {
+                            Point from = new Point(x, y);
+                            Point to = new Point(x + dx, y + dy);
+                            if (to.X >= 0 && to.X < 8 && to.Y >= 0 && to.Y < 8)
+                            {
+                                if (IsNormalMoveValid(from, to, piece))
+                                    normalMoves.Add((from, to));
+                            }
+                        }
+                    }
+                }
             }
         }
-
-        return validMoves;
+        return normalMoves;
     }
 
     private List<(Point, Point)> GetCaptureMovesFrom(Color color)
     {
-        throw new NotImplementedException();
+        var captures = new List<(Point, Point)>();
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                var piece = _board.Squares[y, x].Piece;
+                if (piece != null && piece.Color == color)
+                {
+                    int[] dirs = { -2, 2 };
+                    foreach (int dy in dirs)
+                    {
+                        foreach (int dx in dirs)
+                        {
+                            Point from = new Point(x, y);
+                            Point to = new Point(x + dx, y + dy);
+                            if (to.X >= 0 && to.X < 8 && to.Y >= 0 && to.Y < 8)
+                            {
+                                if (IsCaptureMoveValid(from, to, piece))
+                                    captures.Add((from, to));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return captures;
     }
 
     private bool IsKing(Piece piece)
     {
         return piece.Role == Role.King;
     }
-    
+
     private void PromoteToKing(Role role)
     {
         throw new NotImplementedException();

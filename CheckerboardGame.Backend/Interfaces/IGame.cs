@@ -12,4 +12,5 @@ public interface IGame
     void RemovePiece(Point point);
     IBoard GetBoard();
     int CountPieces(Color color);
+    List<(Point, Point)> GetAllValidMoves(Color color);
 }
