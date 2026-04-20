@@ -1,3 +1,4 @@
+using CheckerboardGame.Backend.Dto;
 using CheckerboardGame.Backend.Enums;
 using CheckerboardGame.Backend.Models;
 
@@ -5,6 +6,7 @@ namespace CheckerboardGame.Backend.Interfaces;
 
 public interface IGame
 {
+    GameStatus Status { get; }
     void Run(List<IPlayer> players);
     void SwitchTurn();
     IPlayer GetCurrentPlayer();
@@ -12,5 +14,5 @@ public interface IGame
     void RemovePiece(Point point);
     IBoard GetBoard();
     int CountPieces(Color color);
-    List<(Point, Point)> GetAllValidMoves(Color color);
+    List<ValidMoveDto> GetAllValidMoves(Color color);
 }

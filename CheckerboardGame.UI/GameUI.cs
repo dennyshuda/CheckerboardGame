@@ -1,4 +1,5 @@
-﻿using CheckerboardGame.Backend.Enums;
+﻿using CheckerboardGame.Backend.Dto;
+using CheckerboardGame.Backend.Enums;
 using CheckerboardGame.Backend.Interfaces;
 using CheckerboardGame.Backend.Models;
 
@@ -25,11 +26,11 @@ public class GameUi
 
         Console.WriteLine("   0  1  2  3  4  5  6  7");
 
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
             Console.Write(y + " ");
 
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 var piece = boardData.Squares[y, x].Piece;
 
@@ -49,8 +50,9 @@ public class GameUi
             Console.WriteLine();
         }
     }
+    
 
-    public void DisplayValidMoves(List<(Point From, Point To)> moves)
+    public void DisplayValidMoves(List<ValidMoveDto> moves)
     {
         if (moves.Count == 0)
         {
@@ -63,51 +65,43 @@ public class GameUi
         for (int i = 0; i < moves.Count; i++)
         {
             var m = moves[i];
-            Console.WriteLine($"[{i + 1}] ({m.From.Y},{m.From.X}) -> ({m.To.Y},{m.To.X})");
+            Console.WriteLine($"[{i + 1}] ({m.FromPoint.Y},{m.FromPoint.X}) -> ({m.ToPoint.Y},{m.ToPoint.X})");
         }
     }
 
     public void PlayTurn()
     {
-        var validMoves = _game.GetAllValidMoves(Color.White);
+        Console.WriteLine(_game.GetCurrentPlayer().Name);
+        
+        var validMoves = _game.GetAllValidMoves(_game.GetCurrentPlayer().Name == "Wowo" ? Color.White : Color.Black);
 
         if (validMoves.Count == 0)
         {
             Console.WriteLine("Game Over! Tidak ada langkah tersisa.");
             return;
         }
+        
+
+        DisplayBoard();
 
         DisplayValidMoves(validMoves);
 
         Console.Write("Pilih nomor langkah: ");
-        int choice = int.Parse(Console.ReadLine()) - 1;
+        int choice = int.Parse(Console.ReadLine() ?? string.Empty) - 1;
 
         var selectedMove = validMoves[choice];
 
-        _game.DoMove(selectedMove.Item1, selectedMove.Item2);
+        _game.DoMove(selectedMove.FromPoint, selectedMove.ToPoint);
     }
 
     public void Run()
     {
         Console.Clear();
         _game.Run(_players);
-        Console.WriteLine(_game.CountPieces(Color.Black));
-        Console.WriteLine($"--- Giliran ---");
-        var currentPlayer = _game.GetCurrentPlayer();
-        DisplayBoard();
-        _game.RemovePiece(new Point(0, 1));
-        _game.RemovePiece(new Point(0, 1));
-        Console.WriteLine(_game.CountPieces(Color.Black));
-        Console.WriteLine($"Bidak di (2,5) telah dihapus.");
-        Console.WriteLine($"Sekarang giliran: {currentPlayer.Name}");
-        _game.SwitchTurn();
-        var currentPlayer2 = _game.GetCurrentPlayer();
-        Console.WriteLine($"Sekarang giliran: {currentPlayer2.Name}");
-        PlayTurn();
-        DisplayBoard();
-
-
-
-        _game.GetBoard();
+        while (_game.Status != GameStatus.GameOver)
+        {
+            PlayTurn();
+        }
+        
     }
 }

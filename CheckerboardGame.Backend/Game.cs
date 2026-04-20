@@ -1,4 +1,5 @@
-﻿using CheckerboardGame.Backend.Enums;
+﻿using CheckerboardGame.Backend.Dto;
+using CheckerboardGame.Backend.Enums;
 using CheckerboardGame.Backend.Interfaces;
 using CheckerboardGame.Backend.Models;
 
@@ -11,7 +12,7 @@ public class Game : IGame
     private List<IPlayer> _players;
     private int _currentPlayerIndex;
     private IPlayer? _winner;
-    private GameStatus Status { get; }
+    public GameStatus Status { get; }
 
     public Game(IBoard board)
     {
@@ -32,29 +33,25 @@ public class Game : IGame
                 _board.Squares[y, x] = new Square(new Point(x, y), null);
             }
         }
-        Console.WriteLine("Backend: 64 Kotak (Squares) telah dibuat.");
     }
 
     private void InitializePiece()
     {
-        for (int y = 0; y < 8; y++)
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 if ((x + y) % 2 != 0)
                 {
-                    if (y < 3)
+                    _board.Squares[y, x].Piece = y switch
                     {
-                        _board.Squares[y, x].Piece = new Piece(Color.Black, Role.Troop);
-                    }
-                    else if (y > 4)
-                    {
-                        _board.Squares[y, x].Piece = new Piece(Color.White, Role.Troop);
-                    }
+                        < 3 => new Piece(Color.Black, Role.Troop),
+                        > 4 => new Piece(Color.White, Role.Troop),
+                        _ => _board.Squares[y, x].Piece
+                    };
                 }
             }
         }
-        Console.WriteLine("Backend: Bidak telah disusun di posisi awal.");
     }
 
     public IBoard GetBoard()
@@ -89,8 +86,7 @@ public class Game : IGame
 
         squareTo.Piece = piece;
         squareFrom.Piece = null;
-
-
+        
         SwitchTurn();
     }
 
@@ -113,101 +109,102 @@ public class Game : IGame
             Console.WriteLine($"Backend: Kotak ({point.Y},{point.X}) memang sudah kosong.");
         }
     }
-
+    
     private bool IsNormalMoveValid(Point from, Point to, Piece piece)
     {
-        int dy = to.Y - from.Y;
-        int dx = Math.Abs(to.X - from.X);
+        var diffRow = to.Y - from.Y;
+        var diffCol = Math.Abs(to.X - from.X);
 
-        int allowedDy = (piece.Color == Color.White) ? -1 : 1;
+        var allowedDirectionRow = (piece.Color == Color.White) ? -1 : 1;
 
-        bool isDirectionValid = (piece.Role == Role.King) ? Math.Abs(dy) == 1 : dy == allowedDy;
+        var isDirectionValid = (IsKing(piece)) ? Math.Abs(diffRow) == 1 : diffRow == allowedDirectionRow;
+        
+        var isPieceExist = _board.Squares[to.Y, to.X].Piece == null;
 
-        return isDirectionValid && dx == 1 && _board.Squares[to.Y, to.X].Piece == null;
+        return isDirectionValid && diffCol == 1 && isPieceExist;
     }
 
     private bool IsCaptureMoveValid(Point from, Point to, Piece piece)
     {
-        int dy = to.Y - from.Y;
-        int dx = to.X - from.X;
+        var diffRow = to.Y - from.Y;
+        var diffCol = to.X - from.X;
 
-        if (Math.Abs(dx) != 2 || Math.Abs(dy) != 2) return false;
+        if (Math.Abs(diffCol) != 2 || Math.Abs(diffRow) != 2) return false;
 
-        int midX = from.X + (dx / 2);
-        int midY = from.Y + (dy / 2);
+        var midX = from.X + (diffCol / 2);
+        var midY = from.Y + (diffRow / 2);
         var middlePiece = _board.Squares[midY, midX].Piece;
 
-        bool hasEnemyInMiddle = middlePiece != null && middlePiece.Color != piece.Color;
-        bool isLandingEmpty = _board.Squares[to.Y, to.X].Piece == null;
+        var hasEnemyInMiddle = middlePiece != null && middlePiece.Color != piece.Color;
+        var isLandingEmpty = _board.Squares[to.Y, to.X].Piece == null;
 
-        if (piece.Role != Role.King)
+        if (!IsKing(piece))
         {
-            int allowedJumpDy = (piece.Color == Color.White) ? -2 : 2;
-            if (dy != allowedJumpDy) return false;
+            var allowedJumpDy = (piece.Color == Color.White) ? -2 : 2;
+            if (diffRow != allowedJumpDy) return false;
         }
 
         return hasEnemyInMiddle && isLandingEmpty;
     }
 
-    public List<(Point, Point)> GetAllValidMoves(Color color)
+    public List<ValidMoveDto> GetAllValidMoves(Color color)
     {
         var captures = GetCaptureMovesFrom(color);
-
         if (captures.Count > 0) return captures;
-
-        var normalMoves = new List<(Point, Point)>();
-        for (int y = 0; y < 8; y++)
+        
+        var normalMoves = new List<ValidMoveDto>();
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 var piece = _board.Squares[y, x].Piece;
-                if (piece != null && piece.Color == color)
+                if (piece == null || piece.Color != color) continue;
+                var rowDirection = (IsKing(piece)) ? [-1, 1] : new[] { (color == Color.White ? -1 : 1) };
+                    
+                foreach (var row in rowDirection)
                 {
-                    int[] dyDir = (piece.Role == Role.King) ? new int[] { -1, 1 } : new int[] { (color == Color.White ? -1 : 1) };
-                    int[] dxDir = { -1, 1 };
-
-                    foreach (int dy in dyDir)
+                    var from = new Point(x, y);
+                    
+                    var toLeft = new Point(x - 1, y + row);
+                    if (IsInsideBoard(toLeft) && IsNormalMoveValid(from, toLeft, piece))
                     {
-                        foreach (int dx in dxDir)
-                        {
-                            Point from = new Point(x, y);
-                            Point to = new Point(x + dx, y + dy);
-                            if (to.X >= 0 && to.X < 8 && to.Y >= 0 && to.Y < 8)
-                            {
-                                if (IsNormalMoveValid(from, to, piece))
-                                    normalMoves.Add((from, to));
-                            }
-                        }
+                        normalMoves.Add(new ValidMoveDto { FromPoint = from, ToPoint = toLeft });
+                    }
+                    
+                    var toRight = new Point(x + 1, y + row);
+                    if (IsInsideBoard(toRight) && IsNormalMoveValid(from, toRight, piece))
+                    {
+                        normalMoves.Add(new ValidMoveDto { FromPoint = from, ToPoint = toRight });
                     }
                 }
             }
         }
+        
         return normalMoves;
     }
+    
+    
+    private bool IsInsideBoard(Point point) => point.X is >= 0 and < 8 && point.Y is >= 0 and < 8;
 
-    private List<(Point, Point)> GetCaptureMovesFrom(Color color)
+    private List<ValidMoveDto> GetCaptureMovesFrom(Color color)
     {
-        var captures = new List<(Point, Point)>();
-        for (int y = 0; y < 8; y++)
+        var captures = new List<ValidMoveDto>();
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 var piece = _board.Squares[y, x].Piece;
-                if (piece != null && piece.Color == color)
+                if (piece == null || piece.Color != color) continue;
+                int[] dirs = [-2, 2];
+                foreach (var dy in dirs)
                 {
-                    int[] dirs = { -2, 2 };
-                    foreach (int dy in dirs)
+                    foreach (var dx in dirs)
                     {
-                        foreach (int dx in dirs)
-                        {
-                            Point from = new Point(x, y);
-                            Point to = new Point(x + dx, y + dy);
-                            if (to.X >= 0 && to.X < 8 && to.Y >= 0 && to.Y < 8)
-                            {
-                                if (IsCaptureMoveValid(from, to, piece))
-                                    captures.Add((from, to));
-                            }
-                        }
+                        var from = new Point(x, y);
+                        var to = new Point(x + dx, y + dy);
+                        if (!IsInsideBoard(to)) continue;
+                        if (IsCaptureMoveValid(from, to, piece))
+                            captures.Add(new ValidMoveDto { FromPoint = from, ToPoint = to });
                     }
                 }
             }
@@ -220,7 +217,7 @@ public class Game : IGame
         return piece.Role == Role.King;
     }
 
-    private void PromoteToKing(Role role)
+    private void PromoteToKing(Piece piece)
     {
         throw new NotImplementedException();
     }
@@ -232,10 +229,10 @@ public class Game : IGame
 
     public int CountPieces(Color color)
     {
-        int count = 0;
-        for (int y = 0; y < 8; y++)
+        var count = 0;
+        for (var y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (var x = 0; x < 8; x++)
             {
                 if (_board.Squares[y, x].Piece?.Color == color)
                 {
@@ -255,9 +252,6 @@ public class Game : IGame
         }
 
         _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
-
-        IPlayer currentPlayer = _players[_currentPlayerIndex];
-        Console.WriteLine($"\nCurrent Turn: {currentPlayer.Name}");
     }
 
     public IPlayer GetCurrentPlayer()
