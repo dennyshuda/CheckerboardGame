@@ -6,7 +6,7 @@ namespace CheckerboardGame.Backend.Models;
 public class Piece : IPiece
 {
     public Color Color { get; }
-    public Role Role { get; }
+    public Role Role { get; set; }
 
     public Piece(Color color, Role role)
     {

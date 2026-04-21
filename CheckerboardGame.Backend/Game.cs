@@ -79,29 +79,26 @@ public class Game : IGame
 
         if (Math.Abs(from.X - to.X) == 2)
         {
-            int midX = (from.X + to.X) / 2;
-            int midY = (from.Y + to.Y) / 2;
-            _board.Squares[midY, midX].Piece = null;
+            var midCol = (from.X + to.X) / 2;
+            var midRow = (from.Y + to.Y) / 2;
+            RemovePiece(new Point(midRow, midCol));
         }
 
         squareTo.Piece = piece;
         squareFrom.Piece = null;
-        
+
+        if (piece != null) CheckPromotion(piece, to);
+
         SwitchTurn();
     }
 
     public void RemovePiece(Point point)
     {
-        if (point.X < 0 || point.X > 7 || point.Y < 0 || point.Y > 7)
-        {
-            Console.WriteLine("Backend Error: Koordinat di luar papan!");
-            return;
-        }
         var square = _board.Squares[point.Y, point.X];
 
         if (square.Piece != null)
         {
-            square.Piece = null;
+            square.Piece = null; 
             Console.WriteLine($"Backend: Bidak di ({point.Y},{point.X}) telah dihapus.");
         }
         else
@@ -131,9 +128,9 @@ public class Game : IGame
 
         if (Math.Abs(diffCol) != 2 || Math.Abs(diffRow) != 2) return false;
 
-        var midX = from.X + (diffCol / 2);
-        var midY = from.Y + (diffRow / 2);
-        var middlePiece = _board.Squares[midY, midX].Piece;
+        var midCol = from.X + (diffCol / 2);
+        var midRow = from.Y + (diffRow / 2);
+        var middlePiece = _board.Squares[midRow, midCol].Piece;
 
         var hasEnemyInMiddle = middlePiece != null && middlePiece.Color != piece.Color;
         var isLandingEmpty = _board.Squares[to.Y, to.X].Piece == null;
@@ -217,9 +214,13 @@ public class Game : IGame
         return piece.Role == Role.King;
     }
 
-    private void PromoteToKing(Piece piece)
+    private void CheckPromotion(Piece piece, Point to)
     {
-        throw new NotImplementedException();
+        if (piece?.Role != Role.Troop) return;
+        if ((piece.Color != Color.White || to.Y != 0) &&
+            (piece.Color != Color.Black || to.Y != 7)) return;
+        piece.Role = Role.King;
+        Console.WriteLine("PROMOSI! Bidak menjadi KING!");
     }
 
     public GameStatus GetGameStatus()

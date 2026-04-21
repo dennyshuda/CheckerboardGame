@@ -50,7 +50,6 @@ public class GameUi
             Console.WriteLine();
         }
     }
-    
 
     public void DisplayValidMoves(List<ValidMoveDto> moves)
     {
@@ -73,7 +72,7 @@ public class GameUi
     {
         Console.WriteLine(_game.GetCurrentPlayer().Name);
         
-        var validMoves = _game.GetAllValidMoves(_game.GetCurrentPlayer().Name == "Wowo" ? Color.White : Color.Black);
+        var validMoves = _game.GetAllValidMoves(_players[0].Name == _game.GetCurrentPlayer().Name ? Color.White : Color.Black);
 
         if (validMoves.Count == 0)
         {
@@ -81,7 +80,6 @@ public class GameUi
             return;
         }
         
-
         DisplayBoard();
 
         DisplayValidMoves(validMoves);
