@@ -6,7 +6,7 @@ namespace CheckerboardGame.Backend.Interfaces;
 
 public interface IGame
 {
-    GameStatus Status { get; }
+    GameStatus Status { get; set; }
     void Run(List<IPlayer> players);
     void SwitchTurn();
     IPlayer GetCurrentPlayer();

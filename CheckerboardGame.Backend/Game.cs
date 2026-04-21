@@ -12,7 +12,7 @@ public class Game : IGame
     private List<IPlayer> _players;
     private int _currentPlayerIndex;
     private IPlayer? _winner;
-    public GameStatus Status { get; }
+    public GameStatus Status { get; set; }
 
     public Game(IBoard board)
     {

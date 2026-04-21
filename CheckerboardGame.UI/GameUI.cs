@@ -76,6 +76,7 @@ public class GameUi
 
         if (validMoves.Count == 0)
         {
+            _game.Status = GameStatus.GameOver;
             Console.WriteLine("Game Over! Tidak ada langkah tersisa.");
             return;
         }
@@ -85,7 +86,7 @@ public class GameUi
         DisplayValidMoves(validMoves);
 
         Console.Write("Pilih nomor langkah: ");
-        int choice = int.Parse(Console.ReadLine() ?? string.Empty) - 1;
+        var choice = int.Parse(Console.ReadLine() ?? string.Empty) - 1;
 
         var selectedMove = validMoves[choice];
 
