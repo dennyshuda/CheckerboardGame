@@ -1,7 +1,7 @@
-﻿using CheckerboardGame.Backend.Dto;
+﻿using CheckerboardGame.Backend;
+using CheckerboardGame.Backend.Dto;
 using CheckerboardGame.Backend.Enums;
 using CheckerboardGame.Backend.Interfaces;
-using CheckerboardGame.Backend.Models;
 
 namespace CheckerboardGame.UI;
 
@@ -10,14 +10,23 @@ public class GameUi
     private readonly IGame _game;
     private readonly List<IPlayer> _players;
 
-    public GameUi(IGame game)
+    public GameUi(IGame game, List<IPlayer> players)
     {
         _game = game ?? throw new ArgumentNullException(nameof(game));
-        _players =
-        [
-            new Player("Wowo"),
-            new Player("Bahlil")
-        ];
+        _players = players ?? throw new ArgumentNullException(nameof(players));
+        _game.PlayerSwitched += HandlePlayerSwitched;
+    }
+
+    private void HandlePlayerSwitched(object? sender, PlayerSwitchedEventArgs e)
+    {
+        Console.WriteLine("\n---------------------------------");
+        Console.Write("🔔 NOTIFIKASI: Giliran ");
+
+        Console.Write($"{e.Name.ToUpper()} - {(_players[0].Name == e.Name ? "PUTIH" : "HITAM")}");
+        Console.ResetColor();
+
+        Console.WriteLine(" sekarang!");
+        Console.WriteLine("---------------------------------");
     }
 
     public void DisplayBoard()
@@ -71,7 +80,7 @@ public class GameUi
     public void PlayTurn()
     {
         Console.WriteLine(_game.GetCurrentPlayer().Name);
-        
+
         var validMoves = _game.GetAllValidMoves(_players[0].Name == _game.GetCurrentPlayer().Name ? Color.White : Color.Black);
 
         if (validMoves.Count == 0)
@@ -80,7 +89,7 @@ public class GameUi
             Console.WriteLine("Game Over! Tidak ada langkah tersisa.");
             return;
         }
-        
+
         DisplayBoard();
 
         DisplayValidMoves(validMoves);
@@ -96,11 +105,19 @@ public class GameUi
     public void Run()
     {
         Console.Clear();
-        _game.Run(_players);
         while (_game.Status != GameStatus.GameOver)
         {
+            Color? winner = _game.GetWinner();
+            if (winner != null)
+            {
+                Console.WriteLine($"\n===============================");
+                Console.WriteLine($"   PERMAINAN SELESAI!");
+                Console.WriteLine($"   PEMENANGNYA ADALAH: {winner}");
+                Console.WriteLine($"===============================");
+                break;
+            }
+
             PlayTurn();
         }
-        
     }
 }

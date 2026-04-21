@@ -7,7 +7,7 @@ namespace CheckerboardGame.Backend.Interfaces;
 public interface IGame
 {
     GameStatus Status { get; set; }
-    void Run(List<IPlayer> players);
+    event EventHandler<PlayerSwitchedEventArgs>? PlayerSwitched;
     void SwitchTurn();
     IPlayer GetCurrentPlayer();
     void DoMove(Point from, Point to);
@@ -15,4 +15,5 @@ public interface IGame
     IBoard GetBoard();
     int CountPieces(Color color);
     List<ValidMoveDto> GetAllValidMoves(Color color);
+    Color? GetWinner();
 }

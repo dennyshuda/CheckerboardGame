@@ -9,16 +9,22 @@ class Program
 {
     static void Main(string[] args)
     {
-        
+
         var grid = new Square[8, 8];
         IBoard board = new Board(grid);
-        
-        IGame game = new Game(board);
-        
-        var consoleApp = new GameUi(game);
-        
-        
-        try 
+
+
+        List<IPlayer> players = [
+            new Player("Wowo"),
+            new Player("Bahlil")
+        ];
+
+        IGame game = new Game(board, players);
+
+        var consoleApp = new GameUi(game, players);
+
+
+        try
         {
             consoleApp.Run();
         }

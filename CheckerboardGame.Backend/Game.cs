@@ -5,6 +5,15 @@ using CheckerboardGame.Backend.Models;
 
 namespace CheckerboardGame.Backend;
 
+public class PlayerSwitchedEventArgs : EventArgs
+{
+    public string Name { get; }
+    public PlayerSwitchedEventArgs(string name)
+    {
+        Name = name;
+    }
+}
+
 public class Game : IGame
 {
     private IBoard _board;
@@ -13,12 +22,14 @@ public class Game : IGame
     private int _currentPlayerIndex;
     private IPlayer? _winner;
     public GameStatus Status { get; set; }
+    public event EventHandler<PlayerSwitchedEventArgs>? PlayerSwitched;
 
-    public Game(IBoard board)
+    public Game(IBoard board, List<IPlayer> players)
     {
         _board = board ?? throw new ArgumentNullException(nameof(board));
         _currentPlayerIndex = 0;
         Status = GameStatus.Ongoing;
+        _players = players;
 
         InitializeBoard();
         InitializePiece();
@@ -59,17 +70,6 @@ public class Game : IGame
         return _board;
     }
 
-    public void Run(List<IPlayer> players)
-    {
-        if (players.Count != 2)
-        {
-            throw new ArgumentException("Checkers need 2 players!");
-        }
-
-        _players = players;
-
-        Console.WriteLine($"Game Ready: {_players[0].Name} (White) vs {_players[1].Name} (Black)");
-    }
 
     public void DoMove(Point from, Point to)
     {
@@ -81,7 +81,7 @@ public class Game : IGame
         {
             var midCol = (from.X + to.X) / 2;
             var midRow = (from.Y + to.Y) / 2;
-            RemovePiece(new Point(midRow, midCol));
+            RemovePiece(new Point(midCol, midRow));
         }
 
         squareTo.Piece = piece;
@@ -94,19 +94,9 @@ public class Game : IGame
 
     public void RemovePiece(Point point)
     {
-        var square = _board.Squares[point.Y, point.X];
-
-        if (square.Piece != null)
-        {
-            square.Piece = null; 
-            Console.WriteLine($"Backend: Bidak di ({point.Y},{point.X}) telah dihapus.");
-        }
-        else
-        {
-            Console.WriteLine($"Backend: Kotak ({point.Y},{point.X}) memang sudah kosong.");
-        }
+        _board.Squares[point.Y, point.X].Piece = null;
     }
-    
+
     private bool IsNormalMoveValid(Point from, Point to, Piece piece)
     {
         var diffRow = to.Y - from.Y;
@@ -115,7 +105,7 @@ public class Game : IGame
         var allowedDirectionRow = (piece.Color == Color.White) ? -1 : 1;
 
         var isDirectionValid = (IsKing(piece)) ? Math.Abs(diffRow) == 1 : diffRow == allowedDirectionRow;
-        
+
         var isPieceExist = _board.Squares[to.Y, to.X].Piece == null;
 
         return isDirectionValid && diffCol == 1 && isPieceExist;
@@ -148,7 +138,7 @@ public class Game : IGame
     {
         var captures = GetCaptureMovesFrom(color);
         if (captures.Count > 0) return captures;
-        
+
         var normalMoves = new List<ValidMoveDto>();
         for (var y = 0; y < 8; y++)
         {
@@ -157,17 +147,17 @@ public class Game : IGame
                 var piece = _board.Squares[y, x].Piece;
                 if (piece == null || piece.Color != color) continue;
                 var rowDirection = (IsKing(piece)) ? [-1, 1] : new[] { (color == Color.White ? -1 : 1) };
-                    
+
                 foreach (var row in rowDirection)
                 {
                     var from = new Point(x, y);
-                    
+
                     var toLeft = new Point(x - 1, y + row);
                     if (IsInsideBoard(toLeft) && IsNormalMoveValid(from, toLeft, piece))
                     {
                         normalMoves.Add(new ValidMoveDto { FromPoint = from, ToPoint = toLeft });
                     }
-                    
+
                     var toRight = new Point(x + 1, y + row);
                     if (IsInsideBoard(toRight) && IsNormalMoveValid(from, toRight, piece))
                     {
@@ -176,11 +166,11 @@ public class Game : IGame
                 }
             }
         }
-        
+
         return normalMoves;
     }
-    
-    
+
+
     private bool IsInsideBoard(Point point) => point.X is >= 0 and < 8 && point.Y is >= 0 and < 8;
 
     private List<ValidMoveDto> GetCaptureMovesFrom(Color color)
@@ -253,10 +243,30 @@ public class Game : IGame
         }
 
         _currentPlayerIndex = (_currentPlayerIndex + 1) % _players.Count;
+        var p = GetCurrentPlayer();
+
+        // Memicu event
+        OnPlayerSwitched(new PlayerSwitchedEventArgs(p.Name));
+    }
+
+    protected virtual void OnPlayerSwitched(PlayerSwitchedEventArgs e)
+    {
+        PlayerSwitched?.Invoke(this, e);
     }
 
     public IPlayer GetCurrentPlayer()
     {
         return _players[_currentPlayerIndex];
+    }
+
+    public Color? GetWinner()
+    {
+        var blackMoves = GetAllValidMoves(Color.Black);
+        if (blackMoves.Count == 0) return Color.White;
+
+        var whiteMoves = GetAllValidMoves(Color.White);
+        if (whiteMoves.Count == 0) return Color.Black;
+
+        return null;
     }
 }
