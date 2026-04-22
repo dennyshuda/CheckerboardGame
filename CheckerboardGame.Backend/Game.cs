@@ -85,7 +85,7 @@ public class Game : IGame
         }
 
         squareTo.Piece = piece;
-        squareFrom.Piece = null;
+        RemovePiece(new Point(from.Y, from.X));
 
         if (piece != null) CheckPromotion(piece, to);
 
